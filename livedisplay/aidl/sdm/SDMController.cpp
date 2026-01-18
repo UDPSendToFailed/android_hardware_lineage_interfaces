@@ -89,9 +89,19 @@ SDMController::SDMController()
     FOR_EACH_FUNCTION(LOAD_SDM_FUNCTION)
 
     // Initialize SDM backend
-    if (init() != android::OK) {
-        // Terminate the program on failure
-        LOG(FATAL) << "Failed to initialize SDM backend";
+    int retries = 10;
+    while (retries > 0) {
+        if (init() == android::OK) {
+            LOG(INFO) << "Successfully initialized SDM backend";
+            break;
+        }
+        LOG(ERROR) << "Failed to initialize SDM backend, retrying... (" << retries << ")";
+        retries--;
+        sleep(1);
+    }
+
+    if (retries == 0) {
+        LOG(ERROR) << "Failed to initialize SDM backend after 10 attempts. LiveDisplay features will be disabled.";
     }
 }
 
